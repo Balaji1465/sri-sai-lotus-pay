@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Sri Sai Lotus Pay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
+<style>
+:root {
+  --bg: #0B0B0F; --surface: #17171C; --fg: #FFFFFF; --muted: #D4D4D8;
+  --pink: #D6086F; --pink-soft: #FF6BB5; --line: #3F3F46;
+  --font: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font);
+  font-size: 15px; line-height: 1.5;
+  padding: max(28px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 36px max(16px, env(safe-area-inset-left, 0px));
+}
+.wrap { max-width: 460px; margin: 0 auto; display: flex; flex-direction: column; gap: 22px; }
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.brand { font-size: 20px; font-weight: 800; letter-spacing: 1px; }
+.pill { padding: 6px 16px; border-radius: 999px; background: var(--pink); font-size: 13px; font-weight: 700; }
+.label { margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 2px; color: var(--pink-soft); }
+.num { margin: 4px 0 0; font-size: clamp(76px, 26vw, 132px); line-height: 1.02; font-weight: 800; letter-spacing: -3px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.pay {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  min-height: 84px; border-radius: 18px; background: var(--pink); color: var(--fg);
+  font-size: clamp(24px, 7vw, 30px); font-weight: 800; text-decoration: none;
+}
+.pay:focus-visible, .app:focus-visible, .copy:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.hint { margin: -10px 0 0; text-align: center; font-size: 13px; color: var(--muted); }
+.apps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.app { display: flex; align-items: center; justify-content: center; min-height: 52px; border: 2px solid var(--fg); border-radius: 14px; color: var(--fg); font-size: 14px; font-weight: 700; text-decoration: none; text-align: center; }
+.fail { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--surface); border: 1px solid var(--pink); font-size: 13px; font-weight: 600; color: #FFB3D9; }
+.alt { display: flex; flex-direction: column; gap: 16px; padding-top: 22px; border-top: 2px solid var(--line); }
+.alt h2 { margin: 0; font-size: 12px; font-weight: 800; letter-spacing: 2px; }
+.qrrow { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.qr { flex: none; padding: 12px; border-radius: 18px; background: #FFFFFF; }
+.qr svg { display: block; width: 168px; height: 168px; max-width: 100%; }
+.qrtext { flex: 1 1 160px; min-width: 0; margin: 0; font-size: 13px; color: var(--muted); }
+.id { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; padding: 14px; border-radius: 14px; background: var(--surface); }
+.idlabel { font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: var(--pink-soft); }
+.idval { flex: 1 1 200px; min-width: 0; font-size: 16px; font-weight: 700; overflow-wrap: anywhere; user-select: all; }
+.copy { min-height: 44px; padding: 0 20px; border: 2px solid var(--fg); border-radius: 999px; background: transparent; color: var(--fg); font: 700 14px var(--font); cursor: pointer; }
+.foot { margin: 0; font-size: 12px; color: var(--muted); }
+.foot a { color: var(--fg); }
+.bad { padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--pink); font-weight: 600; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top">
+    <div class="brand">SRI SAI LOTUS</div>
+    <div class="pill" id="pill">Maintenance</div>
+  </div>
+
+  <div id="bad" class="bad" hidden>This payment link has no amount. Ask for a fresh link from the bill.</div>
+
+  <div id="ok" style="display:flex;flex-direction:column;gap:22px" hidden>
+    <section>
+      <p class="label">AMOUNT PAYABLE PER FLAT</p>
+      <p class="num" id="amt">₹0</p>
+    </section>
+
+    <a id="pay" class="pay" href="#">
+      <span id="paytxt">Pay now</span>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+    </a>
+    <p class="hint" style="margin-top:-10px">Opens your UPI app. If you have more than one, your phone asks which.</p>
+
+    <div class="apps" aria-label="Pay with a specific app">
+      <a class="app" id="gpay" href="#">GPay</a>
+      <a class="app" id="phonepe" href="#">PhonePe</a>
+      <a class="app" id="paytm" href="#">Paytm</a>
+    </div>
+    <p id="fail" class="fail" role="status" hidden>Your phone did not open a UPI app. Try one of the app buttons above, copy the UPI ID below, or scan the QR code from another phone.</p>
+
+    <section class="alt">
+      <h2>OR PAY ANOTHER WAY</h2>
+      <div class="qrrow">
+        <div class="qr"><svg id="qr" viewBox="0 0 10 10" shape-rendering="crispEdges" role="img" aria-label="UPI QR code"><rect id="qrbg" x="0" y="0" width="10" height="10" fill="#FFFFFF"/><path id="qrpath" d="" fill="#0B0B0F"/></svg></div>
+        <p class="qrtext">Scan this code with any UPI app on another phone. On the same phone, take a screenshot and choose “scan from gallery” in your UPI app.</p>
+      </div>
+      <div class="id">
+        <span class="idlabel">UPI ID</span>
+        <span id="upi" class="idval">srijanakiagencies@okhdfcbank</span>
+        <button id="copy" class="copy" type="button">Copy</button>
+      </div>
+    </section>
+  </div>
+
+  <p class="foot"><a href="https://maps.app.goo.gl/cDPhk56T1tyV7zr69" rel="noopener">Sri Sai Lotus · No. 335, Natesan 1st Main Road, Virugambakkam, Chennai – 600 092</a> · +91 98413 86227</p>
+</main>
+
+<script>
+(function () {
+  var UPI = 'srijanakiagencies@okhdfcbank';
+  var PAYEE = 'Sri Sai Lotus';
+
+  function makeQr(text) {
+const data = Array.from(new TextEncoder().encode(text));
+const ECC = [0, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26];
+const BLK = [0, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5];
+const rawMods = (v) => { let r = (16 * v + 128) * v + 64; if (v >= 2) { const a = Math.floor(v / 7) + 2; r -= (25 * a - 10) * a - 55; if (v >= 7) r -= 36; } return r; };
+let ver = 1;
+for (; ver <= 10; ver++) {
+const cap = Math.floor(rawMods(ver) / 8) - ECC[ver] * BLK[ver];
+if (4 + (ver < 10 ? 8 : 16) + data.length * 8 <= cap * 8) break;
+}
+if (ver > 10) return null;
+const size = ver * 4 + 17;
+const rawCw = Math.floor(rawMods(ver) / 8);
+const dataCap = rawCw - ECC[ver] * BLK[ver];
+const bits = [];
+const put = (v, n) => { for (let i = n - 1; i >= 0; i--) bits.push((v >>> i) & 1); };
+put(4, 4); put(data.length, ver < 10 ? 8 : 16); data.forEach((b) => put(b, 8));
+put(0, Math.min(4, dataCap * 8 - bits.length));
+put(0, (8 - (bits.length % 8)) % 8);
+for (let pad = 0xEC; bits.length < dataCap * 8; pad ^= 0xEC ^ 0x11) put(pad, 8);
+const cw = [];
+for (let i = 0; i < bits.length; i += 8) { let b = 0; for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; cw.push(b); }
+const mul = (x, y) => { let z = 0; for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; } return z; };
+const genPoly = (deg) => { const r = new Array(deg).fill(0); r[deg - 1] = 1; let root = 1; for (let i = 0; i < deg; i++) { for (let j = 0; j < deg; j++) { r[j] = mul(r[j], root); if (j + 1 < deg) r[j] ^= r[j + 1]; } root = mul(root, 2); } return r; };
+const remainder = (d, g) => { const r = new Array(g.length).fill(0); for (const b of d) { const f = b ^ r.shift(); r.push(0); g.forEach((c, i) => { r[i] ^= mul(c, f); }); } return r; };
+const nb = BLK[ver]; const eccLen = ECC[ver];
+const numShort = nb - (rawCw % nb); const shortLen = Math.floor(rawCw / nb);
+const gen = genPoly(eccLen);
+const blocks = []; let k = 0;
+for (let i = 0; i < nb; i++) {
+const dl = shortLen - eccLen + (i < numShort ? 0 : 1);
+const dat = cw.slice(k, k + dl); k += dl;
+const ecc = remainder(dat, gen);
+if (i < numShort) dat.push(0);
+blocks.push(dat.concat(ecc));
+}
+const all = [];
+for (let i = 0; i < blocks[0].length; i++) blocks.forEach((b, j) => { if (i !== shortLen - eccLen || j >= numShort) all.push(b[i]); });
+const mod = Array.from({ length: size }, () => new Array(size).fill(false));
+const fn = Array.from({ length: size }, () => new Array(size).fill(false));
+const setF = (x, y, d) => { mod[y][x] = d; fn[y][x] = true; };
+const getBit = (x, i) => ((x >>> i) & 1) !== 0;
+for (let i = 0; i < size; i++) { setF(6, i, i % 2 === 0); setF(i, 6, i % 2 === 0); }
+const finder = (cx, cy) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const d = Math.max(Math.abs(dx), Math.abs(dy)); const x = cx + dx; const y = cy + dy; if (x >= 0 && x < size && y >= 0 && y < size) setF(x, y, d !== 2 && d !== 4); } };
+finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+const na = ver === 1 ? 0 : Math.floor(ver / 7) + 2;
+if (na > 0) {
+const step = Math.ceil((ver * 4 + 4) / (na * 2 - 2)) * 2;
+const pos = [6];
+for (let q = size - 7; pos.length < na; q -= step) pos.splice(1, 0, q);
+for (let i = 0; i < na; i++) for (let j = 0; j < na; j++) {
+if ((i === 0 && j === 0) || (i === 0 && j === na - 1) || (i === na - 1 && j === 0)) continue;
+for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) setF(pos[i] + dx, pos[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+}
+}
+const fmtBits = (mask) => {
+const d = mask; let r = d;
+for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537);
+const b = ((d << 10) | r) ^ 0x5412;
+for (let i = 0; i <= 5; i++) setF(8, i, getBit(b, i));
+setF(8, 7, getBit(b, 6)); setF(8, 8, getBit(b, 7)); setF(7, 8, getBit(b, 8));
+for (let i = 9; i < 15; i++) setF(14 - i, 8, getBit(b, i));
+for (let i = 0; i < 8; i++) setF(size - 1 - i, 8, getBit(b, i));
+for (let i = 8; i < 15; i++) setF(8, size - 15 + i, getBit(b, i));
+setF(8, size - 8, true);
+};
+fmtBits(0);
+if (ver >= 7) {
+let r = ver;
+for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1F25);
+const b = (ver << 12) | r;
+for (let i = 0; i < 18; i++) { const c = getBit(b, i); const a = size - 11 + (i % 3); const bb = Math.floor(i / 3); setF(a, bb, c); setF(bb, a, c); }
+}
+let bi = 0;
+for (let right = size - 1; right >= 1; right -= 2) {
+if (right === 6) right = 5;
+for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) {
+const x = right - j; const up = ((right + 1) & 2) === 0; const y = up ? size - 1 - vert : vert;
+if (!fn[y][x] && bi < all.length * 8) { mod[y][x] = getBit(all[bi >>> 3], 7 - (bi & 7)); bi++; }
+}
+}
+const applyMask = (m) => {
+for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+let inv;
+switch (m) {
+case 0: inv = (x + y) % 2 === 0; break;
+case 1: inv = y % 2 === 0; break;
+case 2: inv = x % 3 === 0; break;
+case 3: inv = (x + y) % 3 === 0; break;
+case 4: inv = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0; break;
+case 5: inv = ((x * y) % 2) + ((x * y) % 3) === 0; break;
+case 6: inv = (((x * y) % 2) + ((x * y) % 3)) % 2 === 0; break;
+default: inv = (((x + y) % 2) + ((x * y) % 3)) % 2 === 0;
+}
+if (!fn[y][x] && inv) mod[y][x] = !mod[y][x];
+}
+};
+const penalty = () => {
+let p = 0;
+for (let t = 0; t < 2; t++) for (let a = 0; a < size; a++) {
+let run = 1; let hist = '';
+for (let b = 0; b < size; b++) {
+const c = t ? mod[b][a] : mod[a][b];
+hist += c ? '1' : '0';
+if (b > 0) {
+const pv = t ? mod[b - 1][a] : mod[a][b - 1];
+if (c === pv) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1;
+}
+}
+const pat = /10111010000|00001011101/g; let m;
+while ((m = pat.exec(hist))) { p += 40; pat.lastIndex = m.index + 1; }
+}
+let dark = 0;
+for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+if (mod[y][x]) dark++;
+if (x < size - 1 && y < size - 1 && mod[y][x] === mod[y][x + 1] && mod[y][x] === mod[y + 1][x] && mod[y][x] === mod[y + 1][x + 1]) p += 3;
+}
+const total = size * size;
+p += Math.max(0, Math.ceil(Math.abs(dark * 20 - total * 10) / total) - 1) * 10;
+return p;
+};
+let best = 0; let bp = Infinity;
+for (let m = 0; m < 8; m++) { applyMask(m); fmtBits(m); const pn = penalty(); if (pn < bp) { bp = pn; best = m; } applyMask(m); }
+applyMask(best); fmtBits(best);
+let path = '';
+for (let y = 0; y < size; y++) {
+let x = 0;
+while (x < size) {
+if (mod[y][x]) { let e = x; while (e < size && mod[y][e]) e++; path += 'M' + x + ' ' + y + 'h' + (e - x) + 'v1h-' + (e - x) + 'z'; x = e; } else x++;
+}
+}
+return { size, path };
+}
+
+  var q = new URLSearchParams(location.search);
+  var am = q.get('am') || '';
+  var month = (q.get('m') || '').slice(0, 40);
+  var ok = /^\d{1,6}(\.\d{1,2})?$/.test(am) && Number(am) > 0;
+  if (!ok) { document.getElementById('bad').hidden = false; return; }
+  document.getElementById('ok').hidden = false;
+
+  var amount = Number(am);
+  var shown = '₹' + amount.toLocaleString('en-IN', { minimumFractionDigits: amount % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  var note = ('Maintenance ' + month).trim();
+  var params = 'pa=' + UPI + '&pn=' + encodeURIComponent(PAYEE) + '&am=' + amount.toFixed(2) + '&cu=INR&tn=' + encodeURIComponent(note);
+  var upiLink = 'upi://pay?' + params;
+
+  document.getElementById('pill').textContent = month ? 'Maintenance · ' + month : 'Maintenance';
+  document.getElementById('amt').textContent = shown;
+  document.getElementById('paytxt').textContent = 'Pay ' + shown + ' now';
+  document.title = 'Pay ' + shown + ' · Sri Sai Lotus';
+
+  var pay = document.getElementById('pay');
+  pay.href = upiLink;
+  document.getElementById('gpay').href = 'tez://upi/pay?' + params;
+  document.getElementById('phonepe').href = 'phonepe://pay?' + params;
+  document.getElementById('paytm').href = 'paytmmp://pay?' + params;
+
+  var fail = document.getElementById('fail');
+  function watch() { setTimeout(function () { if (!document.hidden) fail.hidden = false; }, 1800); }
+  ['pay', 'gpay', 'phonepe', 'paytm'].forEach(function (id) {
+    document.getElementById(id).addEventListener('click', watch);
+  });
+
+  try {
+    var qr = makeQr(upiLink);
+    var n = qr.size + 4;
+    var svg = document.getElementById('qr');
+    svg.setAttribute('viewBox', '-2 -2 ' + n + ' ' + n);
+    var bg = document.getElementById('qrbg');
+    bg.setAttribute('x', -2); bg.setAttribute('y', -2); bg.setAttribute('width', n); bg.setAttribute('height', n);
+    document.getElementById('qrpath').setAttribute('d', qr.path);
+  } catch (e) { /* QR is a backup only */ }
+
+  var copy = document.getElementById('copy');
+  var upiEl = document.getElementById('upi');
+  copy.addEventListener('click', function () {
+    var text = upiEl.textContent.trim();
+    function done(good) {
+      copy.textContent = good ? 'Copied' : 'Press and hold to copy';
+      setTimeout(function () { copy.textContent = 'Copy'; }, 2500);
+    }
+    function fallback() {
+      var good = false;
+      try {
+        var r = document.createRange(); r.selectNodeContents(upiEl);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        good = document.execCommand('copy');
+      } catch (e) { good = false; }
+      done(good);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  });
+})();
+</script>
+</body>
+</html>
