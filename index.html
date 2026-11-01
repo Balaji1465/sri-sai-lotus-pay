@@ -268,6 +268,9 @@ return { size, path };
     document.getElementById(id).addEventListener('click', watch);
   });
 
+  // Reached from a tap in the PDF: hand straight over to the UPI app. If the phone refuses, the buttons below still work.
+  setTimeout(function () { watch(); window.location.href = upiLink; }, 350);
+
   try {
     var qr = makeQr(upiLink);
     var n = qr.size + 4;
