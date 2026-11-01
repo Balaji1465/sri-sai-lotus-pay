@@ -5,14 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Sri Sai Lotus Pay</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap">
 <style>
 :root {
   --bg: #0B0B0F; --surface: #17171C; --fg: #FFFFFF; --muted: #D4D4D8;
   --pink: #D6086F; --pink-soft: #FF6BB5; --line: #3F3F46;
-  --font: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font: system-ui, -apple-system, 'Segoe UI', sans-serif;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -52,9 +49,13 @@ body {
 .foot a { color: var(--fg); }
 .bad { padding: 18px; border-radius: 14px; background: var(--surface); border: 1px solid var(--pink); font-weight: 600; }
 [hidden] { display: none !important; }
+body.wait .wrap { display: none; }
+#opening { display: none; }
+body.wait #opening { display: block; margin: 42vh 0 0; text-align: center; font-size: 18px; font-weight: 700; }
 </style>
 </head>
-<body>
+<body class="wait">
+<div id="opening">Opening your UPI app…</div>
 <main class="wrap">
   <div class="top">
     <div class="brand">SRI SAI LOTUS</div>
@@ -242,7 +243,8 @@ return { size, path };
   var am = q.get('am') || '';
   var month = (q.get('m') || '').slice(0, 40);
   var ok = /^\d{1,6}(\.\d{1,2})?$/.test(am) && Number(am) > 0;
-  if (!ok) { document.getElementById('bad').hidden = false; return; }
+  function reveal() { document.body.classList.remove('wait'); }
+  if (!ok) { document.getElementById('bad').hidden = false; reveal(); return; }
   document.getElementById('ok').hidden = false;
 
   var amount = Number(am);
@@ -268,8 +270,11 @@ return { size, path };
     document.getElementById(id).addEventListener('click', watch);
   });
 
-  // Reached from a tap in the PDF: hand straight over to the UPI app. If the phone refuses, the buttons below still work.
-  setTimeout(function () { watch(); window.location.href = upiLink; }, 350);
+  // Reached from a tap in the PDF: hand straight over to the UPI app, no page in between.
+  window.location.replace(upiLink);
+  setTimeout(function () { if (!document.hidden) { reveal(); fail.hidden = false; } }, 1800);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) reveal(); });
+  window.addEventListener('pageshow', function (e) { if (e.persisted) reveal(); });
 
   try {
     var qr = makeQr(upiLink);
